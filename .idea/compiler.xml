@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="UserService" />
+        <module name="AuthorizationService" />
         <module name="bff" />
       </profile>
     </annotationProcessing>
@@ -17,6 +18,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="AuthService" options="-parameters" />
+      <module name="AuthorizationService" options="-parameters" />
       <module name="UserService" options="-parameters" />
       <module name="bff" options="-parameters" />
     </option>
