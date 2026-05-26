@@ -23,17 +23,18 @@ public class ClientService {
 
     @Transactional
     public void registerUser(RegisterRequestDto registerRequest){
+        System.out.println("incoming username" + registerRequest.username());
         UserClient user = new UserClient();
 
-        user.setUsername(registerRequest.userName());
-        user.setPassword(passwordEncoder.encode(registerRequest.passWord()));
+        user.setUsername(registerRequest.username());
+        user.setPassword(passwordEncoder.encode(registerRequest.password()));
 
         try{
             repository.save(user);
         } catch (DataIntegrityViolationException de){
             String message = de.getMessage() != null ? de.getMessage().toLowerCase() : "";
             if (message.contains("username")) {
-                throw new UserAlreadyExistsException(registerRequest.userName(), de);
+                throw new UserAlreadyExistsException(registerRequest.username(), de);
             }
         }
     }

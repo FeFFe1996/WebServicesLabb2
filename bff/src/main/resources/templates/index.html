@@ -2,13 +2,81 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>labb 2</title>
+    <title>Labb 2</title>
+    <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js"></script>
 </head>
-<header>
-    <h1>this is bff</h1>
-</header>
 <body>
 
+<div class="container" id="spa-container">
+    <div hx-get="/api/auth/check-session" hx-trigger="load" hx-target="#spa-container" hx-swap="outerHTML">
+        <h2>Welcome to Labb 2</h2>
+        <p>Please log in or create a new account to continue.</p>
+        <div style="margin-top: 1.5rem;">
+            <a href="/oauth2/authorization/authservice" hx-boost="false">
+                <button type="button">Log In</button>
+            </a>
+
+            <button type="button"
+                    hx-get="/views/register"
+                    hx-target="#spa-container"
+                    hx-swap="innerHTML">Register</button>
+        </div>
+    </div>
+</div>
+
+
+<template>
+    <th:block th:fragment="register-form">
+        <h2>Create Account</h2>
+        <form hx-post="/api/auth/register"
+              hx-ext="json-enc"
+              hx-target="#feedbackMsg"
+              hx-swap="innerHTML">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+
+        <div id="feedbackMsg" style="margin-top: 1rem;"></div>
+
+        <div class="switch-link">
+            Already have an account?
+            <a href="/" style="cursor:pointer; color:#0070f3;">Back to Home</a>
+        </div>
+    </th:block>
+
+
+    <div class="container" id="spa-container" th:fragment="user-dashboard">
+        <h2>User Dashboard</h2>
+        <p>Logged in successfully as: <strong th:text="${username}">User</strong></p>
+
+        <div class="admin-box" th:if="${roles?.contains('ROLE_ADMIN')}">
+            <h4>🛡️ Administrative Management</h4>
+            <p>This panel is exclusively compiled for accounts holding administrative authorization metrics.</p>
+            <button hx-get="/api/admin/metrics" hx-target="#dashboard-action-area">Review Microservice Health</button>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <button hx-get="/api/messages" hx-target="#dashboard-action-area">Pull My Secure Messages</button>
+        </div>
+
+        <div id="dashboard-action-area" style="margin-top: 1.5rem; font-style: italic;"></div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 2rem 0;"/>
+
+        <a href="/logout" hx-boost="false">
+            <button type="button" style="background:#333;">Sign Out</button>
+        </a>
+    </div>
+
+</template>
 
 </body>
 </html>

@@ -3,8 +3,11 @@ package com.example.userservice.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
+@Table(name = "user_client")
 public class UserClient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,10 +16,22 @@ public class UserClient {
     private String created;
     private String username;
     private String password;
+    private List<String> roles;
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRole(List<String> role) {
+        this.roles = role;
+    }
 
     @PrePersist
     public void addCreated(){
-        created = LocalDateTime.now().toString();
+        this.created = LocalDateTime.now().toString();
+        if (this.roles == null)
+            this.roles = new ArrayList<>();
+        this.roles.add("ROLE_USER");
     }
 
     public String getCreated() {

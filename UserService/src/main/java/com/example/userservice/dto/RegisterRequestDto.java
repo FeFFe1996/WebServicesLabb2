@@ -5,9 +5,9 @@ import jakarta.validation.constraints.Size;
 
 public record RegisterRequestDto(
         @NotBlank
-        String userName,
+        String username,
         @NotBlank
         @Size(min = 8)
-        String passWord
+        String password
 ) {
 }
