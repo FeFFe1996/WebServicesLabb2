@@ -10,7 +10,7 @@ services:
   mysql:
     image: 'mysql:latest'
     environment:
-      - 'MYSQL_DB=message_db'
+      - 'MYSQL_DATABASE=message_db'
       - 'MYSQL_ROOT_PASSWORD=myRoot'
       - 'MYSQL_PASSWORD=myPass'
       - 'MYSQL_USER=myUser'
