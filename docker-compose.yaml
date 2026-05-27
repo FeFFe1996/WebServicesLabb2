@@ -7,3 +7,12 @@ services:
       - 'POSTGRES_USER=myuser'
     ports:
       - '5432:5432'
+  mysql:
+    image: 'mysql:latest'
+    environment:
+      - 'MYSQL_DB=message_db'
+      - 'MYSQL_ROOT_PASSWORD=myRoot'
+      - 'MYSQL_PASSWORD=myPass'
+      - 'MYSQL_USER=myUser'
+    ports:
+      - '3306:3306'

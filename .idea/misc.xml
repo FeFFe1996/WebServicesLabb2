@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/AuthService/pom.xml" />
         <option value="$PROJECT_DIR$/demo/pom.xml" />
         <option value="$PROJECT_DIR$/AuthorizationService/pom.xml" />
+        <option value="$PROJECT_DIR$/messageService/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
