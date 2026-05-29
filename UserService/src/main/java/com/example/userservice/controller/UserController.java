@@ -5,6 +5,8 @@ import com.example.userservice.dto.RegisterRequestDto;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.repository.UserClientRepository;
 import com.example.userservice.service.ClientService;
+import org.example.grpc.CreateRequest;
+import org.example.grpc.UserInfo;
 import org.example.grpc.UserServiceGrpc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,12 +22,13 @@ public class UserController {
     private final ClientService service;
     private final UserClientRepository repository;
 
-    final UserServiceGrpc.UserServiceStub stub;
+    final UserServiceGrpc.UserServiceBlockingStub stub;
 
     public UserController(
             ClientService service,
             UserClientRepository repository,
-            UserServiceGrpc.UserServiceStub stub) {
+            UserServiceGrpc.UserServiceBlockingStub stub
+           ) {
         this.service = service;
         this.repository = repository;
         this.stub = stub;
@@ -45,7 +48,13 @@ public class UserController {
     public String getUserInfo(@PathVariable String username){
         var user = repository.findByUsername(username);
         if (user.isPresent()){
-            return user.get().username();
+            CreateRequest request = CreateRequest.newBuilder()
+                    .setUsername(user.get().username())
+                    .build();
+
+            UserInfo info = stub.sendUserInfo(request);
+
+            return "sent request: " + info.getUsername();
         } else {
             throw new UsernameNotFoundException("no user with username found");
         }

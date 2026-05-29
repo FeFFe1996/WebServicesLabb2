@@ -10,6 +10,9 @@ import com.example.messageservice.repositories.MessageTopicRepository;
 import com.example.messageservice.repositories.MessagesRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.example.grpc.CreateRequest;
+import org.example.grpc.UserInfo;
+import org.example.grpc.UserServiceGrpc;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,20 +23,29 @@ public class MessagesService {
 
     private final MessagesRepository messagesRepository;
     private final MessageTopicRepository messageTopicRepository;
+    private UserServiceGrpc.UserServiceBlockingStub userServiceStub;
 
-
-    public MessagesService(MessagesRepository messagesRepository, MessageTopicRepository messageTopicRepository){
+    public MessagesService(
+            MessagesRepository messagesRepository,
+            MessageTopicRepository messageTopicRepository,
+            UserServiceGrpc.UserServiceBlockingStub stub){
         this.messagesRepository = messagesRepository;
         this.messageTopicRepository = messageTopicRepository;
-
+        this.userServiceStub = stub;
     }
 
     @Transactional
     public void createTopic(CreateTopicDto createTopicDto){
-        MessageTopic topic = new MessageTopic();
+        CreateRequest request = CreateRequest.newBuilder()
+                .setUserId(createTopicDto.userId())
+                .build();
 
+        UserInfo infoResponse = userServiceStub.sendUserInfo(request);
+        String userName = infoResponse.getUsername();
+
+        MessageTopic topic = new MessageTopic();
         topic.setTopicName(createTopicDto.topicName());
-        topic.setCreatedBy(createTopicDto.createdBy());
+        topic.setCreatedBy(userName);
         topic.setDescription(createTopicDto.description());
         topic.setMesssagesList(new ArrayList<>());
 
@@ -42,17 +54,23 @@ public class MessagesService {
 
     @Transactional
     public void createMessage(CreateMessageDto createMessageDto){
-        Messages messages = new Messages();
-        messages.setUsername(createMessageDto.username());
-        messages.setMessage(createMessageDto.message());
+        MessageTopic topic = messageTopicRepository.findById(createMessageDto.topicId())
+                .orElseThrow(() -> new NoTopicWithThatIdException(
+                        "Cannot create message. Topic with id: " + createMessageDto.topicId() + " does not exist!"));
 
-        try {
-            MessageTopic topic = messageTopicRepository.findMessageTopicById(createMessageDto.topic().getId());
-            messages.setTopic(topic);
-            messagesRepository.save(messages);
-        }catch (EntityNotFoundException e){
-            throw new NoTopicWithThatIdException("Cannot create message. Topic with id: " + createMessageDto.topic().getId() + " does not exist!" );
-        }
+        CreateRequest request = CreateRequest.newBuilder()
+                .setUserId(createMessageDto.userId())
+                .build();
+
+        UserInfo infoResponse = userServiceStub.sendUserInfo(request);
+        String userName = infoResponse.getUsername();
+
+        Messages messages = new Messages();
+        messages.setUsername(userName);
+        messages.setMessage(createMessageDto.message());
+        messages.setTopic(topic);
+
+        messagesRepository.save(messages);
     }
 
     public List<GetTopicTitlesDto> getTopicTitles(){
