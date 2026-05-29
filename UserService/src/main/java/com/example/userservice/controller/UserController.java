@@ -5,9 +5,11 @@ import com.example.userservice.dto.RegisterRequestDto;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.repository.UserClientRepository;
 import com.example.userservice.service.ClientService;
+import org.example.grpc.UserServiceGrpc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,22 +20,35 @@ public class UserController {
     private final ClientService service;
     private final UserClientRepository repository;
 
-    public UserController(ClientService service, UserClientRepository repository) {
+    final UserServiceGrpc.UserServiceStub stub;
+
+    public UserController(
+            ClientService service,
+            UserClientRepository repository,
+            UserServiceGrpc.UserServiceStub stub) {
         this.service = service;
         this.repository = repository;
+        this.stub = stub;
     }
 
     @GetMapping("/users/{username}")
     public ResponseEntity<UserDto> getUserByName(@PathVariable String username){
-        var userT = repository.findByUsername(username);
-        System.out.println(userT.get().username());
-
         return repository.findByUsername(username)
                 .map(user -> ResponseEntity.ok(new UserDto(
                         user.username(),
                         user.password(),
                         List.of("USER_ROLE")
                 ))).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/userinfo/{username}")
+    public String getUserInfo(@PathVariable String username){
+        var user = repository.findByUsername(username);
+        if (user.isPresent()){
+            return user.get().username();
+        } else {
+            throw new UsernameNotFoundException("no user with username found");
+        }
     }
 
     @PostMapping("/auth/register")
